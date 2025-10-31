@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'user',
     'patient',
     'medical_record',
@@ -48,7 +51,7 @@ INSTALLED_APPS = [
     'appointment'
 ]
 
-AUTH_USER_MODEL = 'user.CustomUser'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -132,8 +135,30 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'user.CustomUser'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
     ),
+
+    'DEFAULT_THROTTLE_CLASSES':[
+        'custom.throttles.BurstRateThrottle',
+        'custom.throttles.SustainedRateThrottle',
+        'custom.throttles.AnonBurstRateThrottle',
+        'custom.throttles.AnonSustainedRateThrottle',
+    ],
+
+    'DEFAULT_THROTTLE_RATES':{
+        'burst': '60/min',
+        'sustained': '1000/day',
+        'anon_burst': '20/min',
+        'anon_sustained':'100/day'
+    }
 }
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

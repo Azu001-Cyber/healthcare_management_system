@@ -19,13 +19,14 @@ It provides secure and efficient management of:
 - Generate bills
 - Role based permissions (doctor, admin etc)
 
-# Bonus Features (TO ADD LATER)
+# Bonus Features
+- Implement Rate Limiting to prevent API endpoint Abuse by users and non users ✅
 - Appointment reminders
 - Medical record history
 - Export report (PDF or CSV)
 - DashBoard Statistics
 
-The API aims to replicate real-world hospital workflows from booking an appointment to generating a bill all while ensuring data integrity, role-based access control and smooth communication between different entities in a hospital environment*
+The API aims to replicate real-world hospital workflows from booking an appointment to generating a bill all while ensuring data integrity, role-based access control and smooth communication between different entities in a hospital environment
 
 # Project objective Overview
 
@@ -35,7 +36,7 @@ The API aims to replicate real-world hospital workflows from booking an appointm
 * Restrict access to sensitive data based on user roles.
 
 2. Patient, Doctor, and Nurse Management 
-* Allow patients and doctors to register, update and view profiles.
+* Allow patients and doctors and nurse to register, update and view profiles.
 * Store essential information such as medical history, specialization, and contact details
 * Enable the admin to manage staff and patient records efficiently
 

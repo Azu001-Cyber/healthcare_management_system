@@ -1,32 +1,18 @@
 from django.shortcuts import render
+from django.contrib.auth import authenticate
 from user.serializers import CustomUserSerializer
-from .models import CustomUser
-from rest_framework.decorators import api_view, throttle_classes
-from rest_framework.throttling import UserRateThrottle
+from rest_framework.decorators import (api_view,
+                                    APIView)
+
+from rest_framework.permissions import IsAuthenticated
+
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 
-# from rest_framework.generics import GenericAPIView
-# from rest_framework.mixins import (ListModelMixin,
-#                                     CreateModelMixin,
-#                                     RetrieveModelMixin, 
-#                                     DestroyModelMixin)
-# Create your views here.
 
-# class CreateUser(GenericAPIView, CreateModelMixin):
-#     class Meta:
-#         Model = CustomUser
-#         serializer_class = CustomUserSerializer
-    
-#     def post(self, request, *args, **kwargs):
-#         # serializer = 
-#         return Response()
 
-class TenPerDayUserThrottle(UserRateThrottle):
-    rate = '10/day'
-
-@api_view(['GET', 'POST'])
-@throttle_classes(TenPerDayUserThrottle)
+@api_view(['POST'])
 def register(request):
     if request.method == 'POST':
         serializer  = CustomUserSerializer(data=request.data)
@@ -42,8 +28,59 @@ def register(request):
         )
 
 
+
+
 @api_view(['POST'])
-@throttle_classes(TenPerDayUserThrottle)
 def login(request):
-     ...
-    
+    if request.method == 'POST':
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            user = authenticate(username=username, password=password)
+            if user:
+                refresh = RefreshToken.for_user(user)
+                return Response(
+                    {"message":"Login Successful!",
+                    "refresh":str(refresh),
+                    "access":str(refresh.access_token)
+                    },
+                    status=status.HTTP_200_OK
+                )
+            return Response(
+                {'error':'Invalid username or password'
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+                )
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try: 
+            refresh_token = request.data.get('refresh')
+            if refresh_token is None:
+                return Response(
+                    {
+                        "error":"Refresh token is required"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({
+                'message':"Logout Successful",
+            },
+            status=status.HTTP_205_RESET_CONTENT
+            )
+        except Exception:
+            return Response({
+                "error":'Invalide or expired token'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+            )
+
